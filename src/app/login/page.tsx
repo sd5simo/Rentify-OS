@@ -128,11 +128,7 @@ export default function LoginPage() {
           <p className="text-[11px] text-zinc-600 font-medium">
             Kharrazi Car You © {new Date().getFullYear()}
           </p>
-          <div className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-            <p className="text-[10px] text-zinc-400">
-              Demo: <span className="text-zinc-200 font-mono">admin</span> / <span className="text-zinc-200 font-mono">kharrazi2026v1</span>
-            </p>
-          </div>
+        
         </div>
       </div>
     </div>
