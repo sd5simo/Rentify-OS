@@ -10,7 +10,7 @@ interface AuthState {
 
 // Credentials — change these to real values
 const CREDENTIALS: Record<string, string> = {
-  admin: "kharrazi2025",
+  admin: "kharrazi2026v1",
   manager: "carayou123",
 };
 

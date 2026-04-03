@@ -30,7 +30,18 @@ function getAlerts(v: any) {
   if (v.vignetteExpiry) { const d = Math.ceil((new Date(v.vignetteExpiry).getTime() - now) / day); if (d < 0) a.push({ sev: "CRITICAL", type: "Vignette", msg: `Expirée depuis ${Math.abs(d)}j` }); else if (d <= 30) a.push({ sev: "WARNING", type: "Vignette", msg: `Dans ${d} jours` }); }
   return a;
 }
+
 function Chevron() { return (<svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>); }
+
+// ✅ 1. Moved the reusable field component OUTSIDE of the main page component
+const VehicleField = ({ label, value, onChange, type = "text", editing }: any) => (
+  <div>
+    <label className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold block mb-1">{label}</label>
+    {editing
+      ? <input type={type} value={value ?? ""} onChange={onChange} className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none" />
+      : <p className="text-sm text-slate-200 py-1.5 px-1">{value || <span className="text-slate-600 italic text-xs">—</span>}</p>}
+  </div>
+);
 
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -52,7 +63,7 @@ export default function VehicleDetailPage() {
     </div>
   );
 
-  // ── Computed data using correct store methods ──────────────────────
+  // Computed data
   const damages = store.getDamagesByVehicle(id);
   const rentals = store.getRentalsByVehicle(id);
   const totalRevenue = store.getVehicleTotalRevenue(id);
@@ -62,8 +73,6 @@ export default function VehicleDetailPage() {
 
   const save = () => { store.updateVehicle(id, form); setEditing(false); };
 
-  // ── FIX: addDamage now uses the correct interface signature ────────
-  // store.addDamage(vehicleId, damageData) — no extra fields
   const addDamage = () => {
     if (!dmgForm.description) return;
     store.addDamage(id, {
@@ -79,7 +88,6 @@ export default function VehicleDetailPage() {
     setShowDmgForm(false);
   };
 
-  // ── FIX: repairDamage(vehicleId, damageId, cost) — correct signature
   const confirmRepair = () => {
     if (!repairModal) return;
     store.repairDamage(id, repairModal, parseFloat(repairCostInput) || 0);
@@ -88,15 +96,6 @@ export default function VehicleDetailPage() {
   };
 
   const F = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [k]: e.target.value });
-
-  const Field = ({ label, field, type = "text" }: { label: string; field: string; type?: string }) => (
-    <div>
-      <label className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold block mb-1">{label}</label>
-      {editing
-        ? <input type={type} value={form[field] ?? ""} onChange={F(field)} className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none" />
-        : <p className="text-sm text-slate-200 py-1.5 px-1">{form[field] || <span className="text-slate-600 italic text-xs">—</span>}</p>}
-    </div>
-  );
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -180,20 +179,26 @@ export default function VehicleDetailPage() {
           <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-3">
             <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Caractéristiques</p>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Marque" field="brand" /><Field label="Modèle" field="model" />
-              <Field label="Année" field="year" type="number" /><Field label="Catégorie" field="category" />
-              <Field label="Couleur" field="color" /><Field label="Carburant" field="fuelType" />
-              <Field label="Transmission" field="transmission" /><Field label="Places" field="seats" type="number" />
-              <Field label="Tarif/jour MAD" field="dailyRate" type="number" /><Field label="Kilométrage" field="mileage" type="number" />
+              {/* ✅ 2. Passed value and onChange directly to the extracted VehicleField */}
+              <VehicleField label="Marque" value={form.brand} onChange={F("brand")} editing={editing} />
+              <VehicleField label="Modèle" value={form.model} onChange={F("model")} editing={editing} />
+              <VehicleField label="Année" value={form.year} onChange={F("year")} type="number" editing={editing} />
+              <VehicleField label="Catégorie" value={form.category} onChange={F("category")} editing={editing} />
+              <VehicleField label="Couleur" value={form.color} onChange={F("color")} editing={editing} />
+              <VehicleField label="Carburant" value={form.fuelType} onChange={F("fuelType")} editing={editing} />
+              <VehicleField label="Transmission" value={form.transmission} onChange={F("transmission")} editing={editing} />
+              <VehicleField label="Places" value={form.seats} onChange={F("seats")} type="number" editing={editing} />
+              <VehicleField label="Tarif/jour MAD" value={form.dailyRate} onChange={F("dailyRate")} type="number" editing={editing} />
+              <VehicleField label="Kilométrage" value={form.mileage} onChange={F("mileage")} type="number" editing={editing} />
             </div>
-            <Field label="Notes" field="notes" />
+            <VehicleField label="Notes" value={form.notes} onChange={F("notes")} editing={editing} />
           </div>
           <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-3">
             <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Documents</p>
-            <Field label="Plaque" field="plate" />
-            <Field label="Visite technique" field="technicalInspectionDate" type="date" />
-            <Field label="Expiration assurance" field="insuranceExpiry" type="date" />
-            <Field label="Expiration vignette" field="vignetteExpiry" type="date" />
+            <VehicleField label="Plaque" value={form.plate} onChange={F("plate")} editing={editing} />
+            <VehicleField label="Visite technique" value={form.technicalInspectionDate} onChange={F("technicalInspectionDate")} type="date" editing={editing} />
+            <VehicleField label="Expiration assurance" value={form.insuranceExpiry} onChange={F("insuranceExpiry")} type="date" editing={editing} />
+            <VehicleField label="Expiration vignette" value={form.vignetteExpiry} onChange={F("vignetteExpiry")} type="date" editing={editing} />
           </div>
         </div>
       )}
@@ -224,8 +229,8 @@ export default function VehicleDetailPage() {
           </div>
           {editing && (
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#21262d]">
-              <Field label="Dernière vidange km" field="lastOilChangeMileage" type="number" />
-              <Field label="Prochaine vidange km" field="nextOilChangeMileage" type="number" />
+              <VehicleField label="Dernière vidange km" value={form.lastOilChangeMileage} onChange={F("lastOilChangeMileage")} type="number" editing={editing} />
+              <VehicleField label="Prochaine vidange km" value={form.nextOilChangeMileage} onChange={F("nextOilChangeMileage")} type="number" editing={editing} />
             </div>
           )}
         </div>
@@ -265,7 +270,6 @@ export default function VehicleDetailPage() {
           )}
 
           {damages.map(d => {
-            // ── FIX: look up client via rentalId, not d.clientId (field doesn't exist)
             const linkedRental = d.rentalId ? store.rentals.find(r => r.id === d.rentalId) : null;
             const linkedClient = linkedRental ? store.getClientById(linkedRental.clientId) : null;
             return (
@@ -284,7 +288,6 @@ export default function VehicleDetailPage() {
                       )}
                     </div>
                     <p className="text-sm text-slate-200">{d.description}</p>
-                    {/* ── FIX: reportedAt (not detectedAt), cost (not repairCost) */}
                     <p className="text-xs text-slate-500 mt-1">
                       {d.reportedAt}{linkedClient && ` · Causé par ${linkedClient.firstName} ${linkedClient.lastName}`}
                     </p>
@@ -344,7 +347,6 @@ export default function VehicleDetailPage() {
               className="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-slate-200 focus:outline-none mb-4" />
             <div className="flex gap-3">
               <button onClick={() => { setRepairModal(null); setRepairCostInput(""); }} className="flex-1 py-2.5 bg-[#1c2130] border border-[#30363d] text-slate-400 font-semibold rounded-lg text-sm">Annuler</button>
-              {/* ── FIX: store.repairDamage (not markDamageRepaired) */}
               <button onClick={confirmRepair} className="flex-1 py-2.5 bg-brand-green-600 hover:bg-brand-green-500 text-white font-semibold rounded-lg text-sm transition-colors">Confirmer</button>
             </div>
           </div>

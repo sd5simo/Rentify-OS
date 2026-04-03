@@ -48,8 +48,9 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {!collapsed ? (
           <>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-green-500 to-brand-green-700 flex items-center justify-center shadow-[0_0_12px_rgba(34,197,94,0.4)]">
-                <Car size={15} className="text-white" />
+              {/* ✨ CUSTOM LOGO - EXPANDED ✨ */}
+              <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                <img src="/logo.png" alt="Kharrazi Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <p className="text-white font-bold text-sm leading-none">Kharrazi</p>
@@ -61,8 +62,9 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </button>
           </>
         ) : (
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-green-500 to-brand-green-700 flex items-center justify-center mx-auto">
-            <Car size={15} className="text-white" />
+          /* ✨ CUSTOM LOGO - COLLAPSED ✨ */
+          <div className="w-8 h-8 flex items-center justify-center mx-auto">
+            <img src="/logo.png" alt="Kharrazi Logo" className="w-full h-full object-contain" />
           </div>
         )}
       </div>

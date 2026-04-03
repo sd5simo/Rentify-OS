@@ -45,7 +45,7 @@ npm run dev
 
 Ouvrir http://localhost:3000
 
-**Identifiants** : `admin` / `kharrazi2025`
+**Identifiants** : `admin` / `kharrazi2026v1`
 
 ---
 

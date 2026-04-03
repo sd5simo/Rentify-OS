@@ -26,6 +26,25 @@ function Chevron() {
   );
 }
 
+// ✅ 1. MOVED OUTSIDE: Converted renderField into a proper external component
+const ClientField = ({ label, value, onChange, type = "text", editing }: any) => (
+  <div>
+    <label className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold block mb-1">{label}</label>
+    {editing ? (
+      <input 
+        type={type} 
+        value={value ?? ""} 
+        onChange={onChange}
+        className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-brand-green-500" 
+      />
+    ) : (
+      <p className="text-sm text-slate-200 py-2 px-1">
+        {value || <span className="text-slate-600 italic">Non renseigné</span>}
+      </p>
+    )}
+  </div>
+);
+
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -65,24 +84,10 @@ export default function ClientDetailPage() {
     setBlacklistReason("");
   };
 
-  // Correction principale : "field: string" pour éviter les 10 erreurs TypeScript
-  const renderField = (label: string, field: string, type = "text") => (
-    <div key={field}>
-      <label className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold block mb-1">{label}</label>
-      {editing ? (
-        <input 
-          type={type} 
-          value={(form as any)[field] ?? ""} 
-          onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-          className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-brand-green-500" 
-        />
-      ) : (
-        <p className="text-sm text-slate-200 py-2 px-1">
-          {(form as any)[field] || <span className="text-slate-600 italic">Non renseigné</span>}
-        </p>
-      )}
-    </div>
-  );
+  // ✅ 2. HELPER function to handle onChange events safely
+  const handleFieldChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [field]: e.target.value });
+  };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -156,21 +161,22 @@ export default function ClientDetailPage() {
           <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-4">
             <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Informations personnelles</p>
             <div className="grid grid-cols-2 gap-4">
-              {renderField("Prénom", "firstName")}
-              {renderField("Nom", "lastName")}
-              {renderField("CIN", "cin")}
-              {renderField("Téléphone", "phone")}
-              {renderField("Email", "email")}
-              {renderField("Ville", "city")}
+              {/* ✅ 3. REPLACED renderField() with <ClientField /> */}
+              <ClientField label="Prénom" value={(form as any).firstName} onChange={handleFieldChange("firstName")} editing={editing} />
+              <ClientField label="Nom" value={(form as any).lastName} onChange={handleFieldChange("lastName")} editing={editing} />
+              <ClientField label="CIN" value={(form as any).cin} onChange={handleFieldChange("cin")} editing={editing} />
+              <ClientField label="Téléphone" value={(form as any).phone} onChange={handleFieldChange("phone")} editing={editing} />
+              <ClientField label="Email" value={(form as any).email} onChange={handleFieldChange("email")} editing={editing} />
+              <ClientField label="Ville" value={(form as any).city} onChange={handleFieldChange("city")} editing={editing} />
             </div>
-            {renderField("Adresse complète", "address")}
-            {renderField("Notes", "notes")}
+            <ClientField label="Adresse complète" value={(form as any).address} onChange={handleFieldChange("address")} editing={editing} />
+            <ClientField label="Notes" value={(form as any).notes} onChange={handleFieldChange("notes")} editing={editing} />
           </div>
           <div className="space-y-4">
             <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-4">
               <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Permis de conduire</p>
-              {renderField("Numéro de permis", "licenseNum")}
-              {renderField("Date d'expiration", "licenseExp", "date")}
+              <ClientField label="Numéro de permis" value={(form as any).licenseNum} onChange={handleFieldChange("licenseNum")} editing={editing} />
+              <ClientField label="Date d'expiration" value={(form as any).licenseExp} onChange={handleFieldChange("licenseExp")} type="date" editing={editing} />
             </div>
             {client.isBlacklist && (
               <div className="rounded-xl border border-red-500/25 bg-red-500/5 p-4">

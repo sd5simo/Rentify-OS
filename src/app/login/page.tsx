@@ -1,7 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Eye, EyeOff, Lock, User, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/store/auth";
 
 export default function LoginPage() {
@@ -15,10 +16,13 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) { setError("Tous les champs sont requis."); return; }
+    if (!username || !password) {
+      setError("Tous les champs sont requis.");
+      return;
+    }
     setLoading(true);
     setError("");
-    await new Promise((r) => setTimeout(r, 600)); // Simulate auth delay
+    await new Promise((r) => setTimeout(r, 800));
     const ok = login(username, password);
     setLoading(false);
     if (ok) {
@@ -29,95 +33,106 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-green-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-brand-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(#21262d 1px, transparent 1px)", backgroundSize: "32px 32px", opacity: 0.4 }} />
+    <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-slate-200">
+      
+      {/* SaaS-style Background Subtlety */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none flex items-center justify-center">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute top-[-20%] w-[600px] h-[400px] bg-brand-green-500/10 blur-[120px] rounded-full" />
       </div>
 
-      <div className="relative w-full max-w-md">
-        {/* Logo block */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-green-500 to-brand-green-700 shadow-[0_0_40px_rgba(34,197,94,0.3)] mb-4">
-            <Car size={28} className="text-white" />
+      <div className="relative w-full max-w-[420px] z-10 flex flex-col items-center">
+        
+        {/* ✨ CUSTOM IMAGE LOGO BLOCK ✨ */}
+        <div className="mb-10 flex flex-col items-center">
+          <div className="w-16 h-16 mb-4 flex items-center justify-center relative">
+            <img 
+              src="/logo.png" 
+              alt="Kharrazi Auto Logo" 
+              className="w-full h-full object-contain drop-shadow-2xl" 
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Kharrazi</h1>
-          <p className="text-brand-green-400 font-semibold text-sm mt-1">Car You — Administration</p>
-          <p className="text-slate-600 text-xs mt-1">Accès réservé au personnel autorisé</p>
+
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Kharrazi Auto</h1>
+          <p className="text-zinc-500 text-sm mt-1.5">Plateforme d'administration interne</p>
         </div>
 
-        {/* Login card */}
-        <div className="rounded-2xl border border-[#21262d] bg-[#161b22] p-8 shadow-2xl">
-          <h2 className="text-lg font-bold text-white mb-1">Connexion</h2>
-          <p className="text-slate-500 text-sm mb-6">Entrez vos identifiants pour accéder au tableau de bord.</p>
-
+        {/* Minimalist Card */}
+        <div className="w-full bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/[0.08] p-8 rounded-3xl shadow-2xl">
+          
           {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-5">
-              <AlertCircle size={15} className="flex-shrink-0" />
-              {error}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-6 animate-fade-in">
+              <AlertCircle size={16} className="flex-shrink-0" />
+              <p>{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">Nom d'utilisateur</label>
-              <div className="relative">
-                <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
-                  autoComplete="username"
-                  className="w-full pl-9 pr-4 py-3 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-green-500/60 focus:ring-1 focus:ring-brand-green-500/20 transition-all"
-                />
-              </div>
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-zinc-400 pl-1">Nom d'utilisateur</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="admin"
+                autoComplete="username"
+                className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand-green-500/50 focus:bg-white/[0.05] transition-all"
+              />
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">Mot de passe</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-zinc-400 pl-1">Mot de passe</label>
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••"
+                  placeholder="••••••••"
                   autoComplete="current-password"
-                  className="w-full pl-9 pr-10 py-3 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-green-500/60 focus:ring-1 focus:ring-brand-green-500/20 transition-all"
+                  className="w-full pl-4 pr-11 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand-green-500/50 focus:bg-white/[0.05] transition-all"
                 />
-                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                <button 
+                  type="button" 
+                  onClick={() => setShowPw(!showPw)} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors rounded-md"
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 mt-2 bg-brand-green-600 hover:bg-brand-green-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:shadow-[0_0_30px_rgba(34,197,94,0.35)]"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Lock size={15} />
-              )}
-              {loading ? "Vérification..." : "Accéder au tableau de bord"}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex items-center justify-center gap-2 py-3 bg-white text-black hover:bg-zinc-200 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed font-semibold rounded-xl transition-all duration-200"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Vérification...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Se connecter</span>
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </div>
           </form>
-
-          <div className="mt-6 pt-5 border-t border-[#21262d]">
-            <p className="text-[11px] text-slate-600 text-center">
-              🔐 Accès sécurisé — Kharrazi Car You · Plateforme interne v1.0
-            </p>
-          </div>
         </div>
 
-        {/* Hint for demo */}
-        <div className="mt-4 p-3 rounded-lg border border-[#21262d] bg-[#0d1117]/80 text-center">
-          <p className="text-xs text-slate-600">Compte démo: <span className="text-slate-400 font-mono">admin</span> / <span className="text-slate-400 font-mono">kharrazi2025</span></p>
+        {/* Footer / Demo Hint */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <p className="text-[11px] text-zinc-600 font-medium">
+            Kharrazi Car You © {new Date().getFullYear()}
+          </p>
+          <div className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+            <p className="text-[10px] text-zinc-400">
+              Demo: <span className="text-zinc-200 font-mono">admin</span> / <span className="text-zinc-200 font-mono">kharrazi2026v1</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
