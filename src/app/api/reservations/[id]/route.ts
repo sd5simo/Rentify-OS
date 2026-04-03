@@ -30,7 +30,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const reservation = await prisma.reservation.findUniqueOrThrow({ where: { id: params.id } });
+    // Ajout de "include: { rental: true }" pour que prisma récupère la relation
+    const reservation = await prisma.reservation.findUniqueOrThrow({ 
+      where: { id: params.id },
+      include: { rental: true }
+    });
 
     if (reservation.status === "CONVERTED") {
       return NextResponse.json(
@@ -39,10 +43,10 @@ export async function DELETE(_: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    // Unlink rental if exists, then delete
+    // Retirer le lien de la location si elle existe, puis supprimer la réservation
     if (reservation.rental) {
       await prisma.rental.update({
-        where: { reservationId: params.id },
+        where: { id: reservation.rental.id },
         data:  { reservationId: null },
       });
     }

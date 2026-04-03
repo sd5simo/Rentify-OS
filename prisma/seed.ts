@@ -290,7 +290,7 @@ async function main() {
         severity: "MODERATE",
         zone: "REAR",
         repaired: true,
-        repairCost: 1800,
+        cost: 1800,       // <--- Changed from repairCost to cost
         repairedAt: subDays(new Date(), 10),
       },
     }),

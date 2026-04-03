@@ -95,7 +95,8 @@ export default function DamageLogPanel({
           <p className="text-sm font-semibold text-slate-200">Journal des dommages</p>
           {logs.filter((l) => !l.repaired).length > 0 && (
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-brand-orange-500/15 text-brand-orange-400 border border-brand-orange-500/20">
-              {logs.filter((l) => !l.repaired)} non réparé(s)
+              {/* CORRECTION ICI : Ajout de .length */}
+              {logs.filter((l) => !l.repaired).length} non réparé(s)
             </span>
           )}
         </div>

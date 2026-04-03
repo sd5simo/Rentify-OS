@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { AlertTriangle, AlertCircle, Info, X, ChevronRight } from "lucide-react";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
@@ -9,7 +10,7 @@ const TYPE_CONFIG = {
   CRITICAL: { icon: <AlertTriangle size={13} />, border: "border-red-500/30", bg: "bg-red-500/5", text: "text-red-400", badge: "bg-red-500/15 text-red-400 border-red-500/20" },
   WARNING:  { icon: <AlertCircle size={13} />,  border: "border-brand-orange-500/30", bg: "bg-brand-orange-500/5", text: "text-brand-orange-400", badge: "bg-brand-orange-500/15 text-brand-orange-400 border-brand-orange-500/20" },
   INFO:     { icon: <Info size={13} />,          border: "border-blue-500/30", bg: "bg-blue-500/5", text: "text-blue-400", badge: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
-};
+} as const;
 
 export default function SmartAlertsPanel({ maxItems = 5, compact = false }: { maxItems?: number; compact?: boolean }) {
   const router = useRouter();
@@ -39,8 +40,14 @@ export default function SmartAlertsPanel({ maxItems = 5, compact = false }: { ma
         const cfg = TYPE_CONFIG[alert.type];
         return (
           <div key={alert.id} className={cn("rounded-xl border p-4 relative group", cfg.border, cfg.bg)}>
-            <button onClick={() => setDismissed((d) => new Set([...d, alert.id]))}
-              className="absolute top-3 right-3 text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-all">
+            <button 
+              onClick={() => setDismissed((prev) => {
+                const next = new Set(prev);
+                next.add(alert.id);
+                return next;
+              })}
+              className="absolute top-3 right-3 text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-all"
+            >
               <X size={12} />
             </button>
             <div className="flex items-start gap-3">
@@ -49,8 +56,12 @@ export default function SmartAlertsPanel({ maxItems = 5, compact = false }: { ma
                 <p className={cn("text-xs font-bold mb-0.5", cfg.text)}>{alert.title}</p>
                 <p className="text-xs text-slate-500 leading-relaxed">{alert.description}</p>
                 {alert.actionHref && (
-                  <button onClick={() => router.push(alert.actionHref!)}
-                    className={cn("mt-2 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors hover:opacity-80", cfg.badge)}>
+                  <button 
+                    onClick={() => {
+                      if (alert.actionHref) router.push(alert.actionHref);
+                    }}
+                    className={cn("mt-2 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border transition-colors hover:opacity-80", cfg.badge)}
+                  >
                     {alert.actionLabel} <ChevronRight size={9} />
                   </button>
                 )}
