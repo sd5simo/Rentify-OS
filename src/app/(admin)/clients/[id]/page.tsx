@@ -3,12 +3,27 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
-import { ArrowLeft, Edit3, Save, X, ShieldBan, ShieldCheck, Phone, Mail, MapPin, CreditCard, Calendar, Car, AlertTriangle, CheckCircle, Clock, Wrench, FileText } from "lucide-react";
+import { ArrowLeft, Edit3, Save, X, ShieldBan, ShieldCheck, Car, AlertTriangle, CheckCircle, Clock, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fmt = (n: number) => n.toLocaleString("fr-MA");
+
+// Formateur de date sécurisé pour éviter les crashs de rendu d'objets
+const formatDate = (dateValue: any) => {
+  if (!dateValue) return "—";
+  try {
+    return new Date(dateValue).toLocaleDateString("fr-FR");
+  } catch {
+    return "—";
+  }
+};
+
 function Chevron() {
-  return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>;
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
 }
 
 export default function ClientDetailPage() {
@@ -30,13 +45,14 @@ export default function ClientDetailPage() {
     </div>
   );
 
-  const rentals = store.getRentalsByClient(id);
-  const damages = store.getDamagesByClient(id);
-  const infractions = store.getInfractionsByClient(id);
-  const totalSpent = store.getClientTotalSpent(id);
-  const activeRental = rentals.find((r) => r.status === "ACTIVE");
+  const rentals = store.getRentalsByClient ? store.getRentalsByClient(id) : [];
+  const damages = store.getDamagesByClient ? store.getDamagesByClient(id) : [];
+  const infractions = store.getInfractionsByClient ? store.getInfractionsByClient(id) : [];
+  const totalSpent = store.getClientTotalSpent ? store.getClientTotalSpent(id) : 0;
+  
+  const activeRental = rentals.find((r: any) => r.status === "ACTIVE");
   const totalDamages = damages.length;
-  const unresolvedInfractions = infractions.filter((i) => !i.resolved).length;
+  const unresolvedInfractions = infractions.filter((i: any) => !i.resolved).length;
 
   const saveEdit = () => {
     store.updateClient(id, form as any);
@@ -49,14 +65,21 @@ export default function ClientDetailPage() {
     setBlacklistReason("");
   };
 
-  const Field = ({ label, field, type = "text" }: { label: string; field: keyof typeof form; type?: string }) => (
-    <div>
+  // Correction principale : "field: string" pour éviter les 10 erreurs TypeScript
+  const renderField = (label: string, field: string, type = "text") => (
+    <div key={field}>
       <label className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold block mb-1">{label}</label>
       {editing ? (
-        <input type={type} value={(form as any)[field] ?? ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-          className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-brand-green-500" />
+        <input 
+          type={type} 
+          value={(form as any)[field] ?? ""} 
+          onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+          className="w-full px-3 py-2 bg-[#0d1117] border border-brand-green-500/40 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-brand-green-500" 
+        />
       ) : (
-        <p className="text-sm text-slate-200 py-2 px-1">{(form as any)[field] || <span className="text-slate-600 italic">Non renseigné</span>}</p>
+        <p className="text-sm text-slate-200 py-2 px-1">
+          {(form as any)[field] || <span className="text-slate-600 italic">Non renseigné</span>}
+        </p>
       )}
     </div>
   );
@@ -80,7 +103,7 @@ export default function ClientDetailPage() {
               {activeRental && <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20"><Car size={11} />En location</span>}
               {unresolvedInfractions > 0 && <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-brand-orange-500/15 text-brand-orange-400 border border-brand-orange-500/20"><AlertTriangle size={11} />{unresolvedInfractions} infraction(s)</span>}
             </div>
-            <p className="text-slate-500 text-sm mt-0.5">Client depuis {new Date(client.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })} · {client.cin}</p>
+            <p className="text-slate-500 text-sm mt-0.5">Client depuis {formatDate(client.createdAt)} · {client.cin}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -104,10 +127,10 @@ export default function ClientDetailPage() {
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Total dépensé", value: `${fmt(totalSpent)} MAD`, color: "text-brand-green-400", href: null },
-          { label: "Locations", value: rentals.length, color: "text-white", href: null },
-          { label: "Dommages causés", value: totalDamages, color: totalDamages > 0 ? "text-brand-orange-400" : "text-white", href: null },
-          { label: "Infractions", value: infractions.length, color: unresolvedInfractions > 0 ? "text-red-400" : "text-white", href: null },
+          { label: "Total dépensé", value: `${fmt(totalSpent)} MAD`, color: "text-brand-green-400" },
+          { label: "Locations", value: rentals.length, color: "text-white" },
+          { label: "Dommages causés", value: totalDamages, color: totalDamages > 0 ? "text-brand-orange-400" : "text-white" },
+          { label: "Infractions", value: infractions.length, color: unresolvedInfractions > 0 ? "text-red-400" : "text-white" },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-[#21262d] bg-[#161b22] p-4">
             <p className="text-xs text-slate-500">{k.label}</p>
@@ -133,27 +156,27 @@ export default function ClientDetailPage() {
           <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-4">
             <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Informations personnelles</p>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Prénom" field="firstName" />
-              <Field label="Nom" field="lastName" />
-              <Field label="CIN" field="cin" />
-              <Field label="Téléphone" field="phone" />
-              <Field label="Email" field="email" />
-              <Field label="Ville" field="city" />
+              {renderField("Prénom", "firstName")}
+              {renderField("Nom", "lastName")}
+              {renderField("CIN", "cin")}
+              {renderField("Téléphone", "phone")}
+              {renderField("Email", "email")}
+              {renderField("Ville", "city")}
             </div>
-            <Field label="Adresse complète" field="address" />
-            <Field label="Notes" field="notes" />
+            {renderField("Adresse complète", "address")}
+            {renderField("Notes", "notes")}
           </div>
           <div className="space-y-4">
             <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-5 space-y-4">
               <p className="text-sm font-bold text-slate-200 border-b border-[#21262d] pb-3">Permis de conduire</p>
-              <Field label="Numéro de permis" field="licenseNum" />
-              <Field label="Date d'expiration" field="licenseExp" type="date" />
+              {renderField("Numéro de permis", "licenseNum")}
+              {renderField("Date d'expiration", "licenseExp", "date")}
             </div>
             {client.isBlacklist && (
               <div className="rounded-xl border border-red-500/25 bg-red-500/5 p-4">
                 <p className="text-sm font-bold text-red-400 flex items-center gap-2 mb-2"><ShieldBan size={14} />Raison du blacklistage</p>
                 <p className="text-sm text-slate-400">{client.blacklistReason}</p>
-                <p className="text-xs text-slate-600 mt-2">Depuis le {client.blacklistedAt ? new Date(client.blacklistedAt).toLocaleDateString("fr-FR") : "—"}</p>
+                <p className="text-xs text-slate-600 mt-2">Depuis le {formatDate(client.blacklistedAt)}</p>
               </div>
             )}
           </div>
@@ -164,8 +187,19 @@ export default function ClientDetailPage() {
       {activeTab === "rentals" && (
         <div className="space-y-2">
           {rentals.length === 0 && <div className="text-center py-12 text-slate-600">Aucune location</div>}
-          {rentals.map((r) => {
-            const v = store.getVehicleById(r.vehicleId);
+          {rentals.map((r: any) => {
+            const v = store.vehicles?.find((veh) => veh.id === r.vehicleId);
+            
+            // Analyse sécurisée de la chaîne JSON "extras"
+            let parsedExtras: any[] = [];
+            if (r.extras) {
+              try {
+                parsedExtras = typeof r.extras === "string" ? JSON.parse(r.extras) : r.extras;
+              } catch {
+                parsedExtras = [{ label: r.extras }];
+              }
+            }
+
             return (
               <button key={r.id} onClick={() => router.push(`/locations/${r.id}`)}
                 className="w-full text-left rounded-xl border border-[#21262d] bg-[#161b22] p-4 hover:border-brand-green-500/30 hover:bg-[#1c2130] transition-all group">
@@ -176,9 +210,9 @@ export default function ClientDetailPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-slate-200 font-mono">{r.contractNum}</p>
-                    <p className="text-xs text-slate-500">{v?.brand} {v?.model} ({v?.plate}) · {r.startDate} → {r.endDate}</p>
-                    {(r.extras ?? []).length > 0 && (
-                      <p className="text-xs text-brand-orange-400 mt-0.5">⚠ Charges supplémentaires: {(r.extras ?? []).map(e => e.label).join(", ")}</p>
+                    <p className="text-xs text-slate-500">{v?.brand} {v?.model} ({v?.plate || "Inconnu"}) · {formatDate(r.startDate)} → {formatDate(r.endDate)}</p>
+                    {parsedExtras.length > 0 && (
+                      <p className="text-xs text-brand-orange-400 mt-0.5">⚠ Charges supplémentaires: {parsedExtras.map(e => e.label || e).join(", ")}</p>
                     )}
                   </div>
                   <div className="text-right">
@@ -195,7 +229,7 @@ export default function ClientDetailPage() {
           <div className="rounded-xl border border-[#21262d] bg-[#161b22] p-4">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Total facturé</span>
-              <span className="font-bold text-white">{fmt(rentals.reduce((s, r) => s + r.totalAmount, 0))} MAD</span>
+              <span className="font-bold text-white">{fmt(rentals.reduce((s: number, r: any) => s + r.totalAmount, 0))} MAD</span>
             </div>
             <div className="flex justify-between text-sm mt-1">
               <span className="text-slate-400">Total encaissé</span>
@@ -203,8 +237,8 @@ export default function ClientDetailPage() {
             </div>
             <div className="flex justify-between text-sm mt-1">
               <span className="text-slate-400">Reste dû</span>
-              <span className={cn("font-bold", rentals.reduce((s, r) => s + r.totalAmount - r.paidAmount, 0) > 0 ? "text-red-400" : "text-brand-green-400")}>
-                {fmt(rentals.reduce((s, r) => s + r.totalAmount - r.paidAmount, 0))} MAD
+              <span className={cn("font-bold", rentals.reduce((s: number, r: any) => s + r.totalAmount - (r.paidAmount || 0), 0) > 0 ? "text-red-400" : "text-brand-green-400")}>
+                {fmt(rentals.reduce((s: number, r: any) => s + r.totalAmount - (r.paidAmount || 0), 0))} MAD
               </span>
             </div>
           </div>
@@ -215,7 +249,8 @@ export default function ClientDetailPage() {
       {activeTab === "damages" && (
         <div className="space-y-2">
           {damages.length === 0 && <div className="text-center py-12 text-slate-600"><CheckCircle size={28} className="mx-auto mb-2 opacity-30" /><p>Aucun dommage causé par ce client</p></div>}
-          {damages.map((d) => {
+          {damages.map((d: any) => {
+            const vehicle = store.vehicles?.find((v) => v.id === d.vehicleId);
             return (
               <div key={d.id} className={cn("rounded-xl border p-4", d.repaired ? "border-[#21262d] bg-[#161b22] opacity-70" : "border-brand-orange-500/25 bg-brand-orange-500/5")}>
                 <div className="flex items-start gap-3">
@@ -233,7 +268,7 @@ export default function ClientDetailPage() {
                       </span>
                       {d.repaired && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-green-500/15 text-brand-green-400 border border-brand-green-500/20">✓ Réparé</span>}
                     </div>
-                    <p className="text-xs text-slate-500">Véhicule: {vehicle?.brand} {vehicle?.model} ({d.vehiclePlate}) · Zone: {d.zone} · {d.reportedAt}</p>
+                    <p className="text-xs text-slate-500">Véhicule: {vehicle?.brand} {vehicle?.model} ({vehicle?.plate || "Inconnu"}) · Zone: {d.zone} · {formatDate(d.reportedAt)}</p>
                     {d.cost != null && <p className="text-xs text-brand-orange-400 mt-0.5">Coût réparation: {fmt(d.cost)} MAD</p>}
                   </div>
                 </div>
@@ -247,7 +282,7 @@ export default function ClientDetailPage() {
       {activeTab === "infractions" && (
         <div className="space-y-2">
           {infractions.length === 0 && <div className="text-center py-12 text-slate-600"><CheckCircle size={28} className="mx-auto mb-2 opacity-30" /><p>Aucune infraction</p></div>}
-          {infractions.map((inf) => (
+          {infractions.map((inf: any) => (
             <div key={inf.id} className={cn("rounded-xl border p-4", inf.resolved ? "border-[#21262d] bg-[#161b22] opacity-70" : "border-red-500/25 bg-red-500/5")}>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -256,7 +291,7 @@ export default function ClientDetailPage() {
                     {inf.resolved && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-green-500/15 text-brand-green-400 border border-brand-green-500/20">✓ Résolu</span>}
                   </div>
                   <p className="text-sm text-slate-300">{inf.description}</p>
-                  <p className="text-xs text-slate-500 mt-1">{inf.date}{inf.amount && ` · ${fmt(inf.amount)} MAD`}</p>
+                  <p className="text-xs text-slate-500 mt-1">{formatDate(inf.date)}{inf.amount != null && ` · ${fmt(inf.amount)} MAD`}</p>
                 </div>
                 {!inf.resolved && (
                   <button onClick={() => store.resolveInfraction(inf.id)}
