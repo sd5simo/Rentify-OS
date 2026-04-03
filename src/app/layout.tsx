@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AutoFlex Admin — Gestion de Location",
-  description: "Plateforme d'administration interne — AutoFlex Car Rental",
+  title: "Kharrazi Admin — Gestion de Location",
+  description: "Plateforme d'administration interne — Kharrazi Car Rental",
   icons: { icon: "/favicon.ico" },
 };
 

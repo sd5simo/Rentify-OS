@@ -4,7 +4,7 @@ import { addDays, subDays, subMonths } from "date-fns";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Seeding AutoFlex Admin database...");
+  console.log("🌱 Seeding Kharrazi Admin database...");
 
   // Clients
   const clients = await Promise.all([

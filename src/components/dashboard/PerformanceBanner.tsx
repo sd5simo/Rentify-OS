@@ -53,7 +53,7 @@ export default function PerformanceBanner({
           {isPositive ? "🎉 Performance positive!" : "⚠️ Performance négative"}
         </p>
         <p className="text-xs text-slate-400 mt-0.5">
-          AutoFlex a généré un bénéfice net de{" "}
+          Kharrazi a généré un bénéfice net de{" "}
           <span className="text-white font-semibold">{formatMAD(totalNet)} MAD</span> — marge
           nette de{" "}
           <span

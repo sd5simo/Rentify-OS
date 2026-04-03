@@ -36,7 +36,7 @@ export default function TopBar() {
   const totalAlerts = unresolvedInfractions + criticalAlerts;
 
   // Determine title from path (handles dynamic routes like /clients/[id])
-  let title = TITLES[pathname] ?? "AutoFlex Admin";
+  let title = TITLES[pathname] ?? "Kharrazi Admin";
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length >= 2) {
     const key = "/" + parts.slice(0, 2).join("/");
