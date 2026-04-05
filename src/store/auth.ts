@@ -27,16 +27,10 @@ export const useAuth = create<AuthState>()(
         
         const cleanUser = username.trim().toLowerCase();
         const cleanPass = password.trim();
-        
-        // SÉCURITÉ : Si la mémoire cache est corrompue, on utilise les mots de passe par défaut
         const currentCreds = get().credentials || DEFAULT_CREDENTIALS;
 
         if (currentCreds[cleanUser] === cleanPass) {
-          set({ 
-            isAuthenticated: true, 
-            username: cleanUser,
-            credentials: currentCreds // Réécrit la mémoire pour la réparer si besoin
-          });
+          set({ isAuthenticated: true, username: cleanUser });
           return true;
         }
         return false;
@@ -50,7 +44,9 @@ export const useAuth = create<AuthState>()(
     }),
     { 
       name: "kharrazi-auth",
-      version: 2, // 🔴 C'EST LA MAGIE ICI : Ça va forcer tous les navigateurs à vider l'ancien cache cassé
+      // MAGIE : On dit au navigateur de ne sauvegarder QUE les mots de passe.
+      // Au rafraîchissement, "isAuthenticated" redevient "false", donc ça déconnecte !
+      partialize: (state) => ({ credentials: state.credentials }),
     }
   )
 );

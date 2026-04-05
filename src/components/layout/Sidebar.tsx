@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShieldBan, PlusCircle, Car, Wallet, BarChart3, AlertTriangle, ChevronLeft, ChevronRight, Gauge, List, CreditCard, LogOut } from "lucide-react";
+import { ShieldBan, PlusCircle, Car, Wallet, BarChart3, AlertTriangle, ChevronLeft, ChevronRight, Gauge, List, CreditCard, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth";
 
@@ -31,6 +31,10 @@ const NAV = [
   ]},
   { title: "Modération", items: [
     { label: "Infractions",        href: "/moderation/infractions", icon: <AlertTriangle size={14} /> },
+  ]},
+  // ✨ NOUVEAU MENU PARAMÈTRES ✨
+  { title: "Configuration", items: [
+    { label: "Paramètres",         href: "/parametres",             icon: <Settings size={14} /> },
   ]},
 ];
 
