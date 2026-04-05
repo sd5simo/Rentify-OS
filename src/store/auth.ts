@@ -11,7 +11,7 @@ interface AuthState {
 }
 
 const DEFAULT_CREDENTIALS: Record<string, string> = {
-  admin: "kharrazi2026v1",
+  admin: "rentify",
   manager: "carayou123",
 };
 
