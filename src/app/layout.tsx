@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kharrazi Admin — Gestion de Location",
-  description: "Plateforme d'administration interne — Kharrazi Car Rental",
+  title: "Rentify-OSAdmin — Gestion de Location",
+  description: "Plateforme d'administration interne — Rentify-OSCar Rental",
   icons: { icon: "/favicon.ico" },
 };
 

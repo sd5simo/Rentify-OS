@@ -36,7 +36,7 @@ export default function TopBar() {
   const totalAlerts = unresolvedInfractions + criticalAlerts;
 
   // Determine title from path (handles dynamic routes like /clients/[id])
-  let title = TITLES[pathname] ?? "Kharrazi Admin";
+  let title = TITLES[pathname] ?? "Rentify-OSAdmin";
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length >= 2) {
     const key = "/" + parts.slice(0, 2).join("/");
@@ -47,7 +47,7 @@ export default function TopBar() {
     <header className="h-[60px] flex items-center justify-between px-6 border-b border-[#21262d] bg-[#0d1117] flex-shrink-0">
       <div>
         <h1 className="text-sm font-bold text-slate-200">{title}</h1>
-        <p className="text-[11px] text-slate-600 mt-0.5">Kharrazi Car You — Espace Administration</p>
+        <p className="text-[11px] text-slate-600 mt-0.5">Rentify-OS — Espace Administration</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-[11px] text-slate-500 hidden sm:block">

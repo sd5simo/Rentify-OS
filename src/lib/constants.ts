@@ -1,8 +1,8 @@
-export const AGENCY_NAME = "Kharrazi";
-export const AGENCY_FULL = "Kharrazi Location de Voitures";
+export const AGENCY_NAME = "Rentify-OS";
+export const AGENCY_FULL = "Rentify-OSLocation de Voitures";
 export const AGENCY_ADDRESS = "123 Avenue Mohammed V, Casablanca 20000";
 export const AGENCY_PHONE = "+212 522 123 456";
-export const AGENCY_EMAIL = "contact@Kharrazi.ma";
+export const AGENCY_EMAIL = "contact@Rentify-OS.ma";
 export const AGENCY_ICE = "002345678000012";
 export const AGENCY_RC = "123456";
 

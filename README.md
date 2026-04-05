@@ -1,4 +1,4 @@
-# 🚗 Kharrazi Car You — Admin Platform
+# 🚗 Rentify-OS — Admin Platform
 
 Gestion interne de location de voitures · Next.js 14 · Prisma · PostgreSQL (Supabase)
 
@@ -45,7 +45,7 @@ npm run dev
 
 Ouvrir http://localhost:3000
 
-**Identifiants** : `admin` / `kharrazi2026v1`
+**Identifiants** : `admin` / `Rentify-OS2026v1`
 
 ---
 

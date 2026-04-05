@@ -67,7 +67,7 @@ export default function StatistiquesPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Statistiques Financières</h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            Kharrazi Car You · {vehicles.length} véhicules · données temps réel
+            Rentify-OS · {vehicles.length} véhicules · données temps réel
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -322,7 +322,7 @@ export default function StatistiquesPage() {
         </div>
         <div className="flex-1">
           <p className={cn("text-sm font-bold", totalNet >= 0 ? "text-brand-green-400" : "text-brand-orange-400")}>
-            {totalNet >= 0 ? "🎉 Performance positive — Kharrazi Car You!" : "⚠️ Charges supérieures aux revenus"}
+            {totalNet >= 0 ? "🎉 Performance positive — Rentify-OS!" : "⚠️ Charges supérieures aux revenus"}
           </p>
           <p className="text-xs text-slate-400 mt-0.5">
             Bénéfice net: <span className="text-white font-semibold">{totalNet.toLocaleString("fr-FR")} MAD</span>

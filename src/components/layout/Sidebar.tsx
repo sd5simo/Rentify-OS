@@ -54,11 +54,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <div className="flex items-center gap-2.5">
               {/* ✨ CUSTOM LOGO - EXPANDED ✨ */}
               <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                <img src="/logo.png" alt="Kharrazi Logo" className="w-full h-full object-contain" />
+                <img src="/logo.png" alt="Rentify-OSLogo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-none">Kharrazi</p>
-                <p className="text-[10px] text-brand-green-500/70 leading-none mt-0.5">Car You · Admin</p>
+                <p className="text-white font-bold text-sm leading-none">Rentify-OS</p>
+                <p className="text-[10px] text-brand-green-500/70 leading-none mt-0.5"> · Admin</p>
               </div>
             </div>
             <button onClick={onToggle} className="text-slate-500 hover:text-slate-300 transition-colors p-1 rounded">
@@ -68,7 +68,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         ) : (
           /* ✨ CUSTOM LOGO - COLLAPSED ✨ */
           <div className="w-8 h-8 flex items-center justify-center mx-auto">
-            <img src="/logo.png" alt="Kharrazi Logo" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="Rentify-OSLogo" className="w-full h-full object-contain" />
           </div>
         )}
       </div>
