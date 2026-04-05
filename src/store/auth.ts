@@ -4,13 +4,12 @@ import { persist } from "zustand/middleware";
 interface AuthState {
   isAuthenticated: boolean;
   username: string | null;
-  credentials: Record<string, string>; // Ajouté : Stocke les mots de passe actuels
+  credentials: Record<string, string>;
   login: (username: string, password: string) => boolean;
   logout: () => void;
-  updatePassword: (user: string, newPass: string) => void; // Ajouté : Fonction pour changer
+  updatePassword: (user: string, newPass: string) => void;
 }
 
-// Les identifiants par défaut (si jamais le système est réinitialisé)
 const DEFAULT_CREDENTIALS: Record<string, string> = {
   admin: "kharrazi2026v1",
   manager: "carayou123",
@@ -24,13 +23,20 @@ export const useAuth = create<AuthState>()(
       credentials: DEFAULT_CREDENTIALS,
       
       login: (username, password) => {
+        if (!username || !password) return false;
+        
         const cleanUser = username.trim().toLowerCase();
         const cleanPass = password.trim();
-        const currentCreds = get().credentials;
+        
+        // SÉCURITÉ : Si la mémoire cache est corrompue, on utilise les mots de passe par défaut
+        const currentCreds = get().credentials || DEFAULT_CREDENTIALS;
 
-        // On vérifie avec les identifiants en mémoire
         if (currentCreds[cleanUser] === cleanPass) {
-          set({ isAuthenticated: true, username: cleanUser });
+          set({ 
+            isAuthenticated: true, 
+            username: cleanUser,
+            credentials: currentCreds // Réécrit la mémoire pour la réparer si besoin
+          });
           return true;
         }
         return false;
@@ -38,11 +44,13 @@ export const useAuth = create<AuthState>()(
       
       logout: () => set({ isAuthenticated: false, username: null }),
       
-      // La nouvelle fonction pour changer le mot de passe
       updatePassword: (user, newPass) => set((state) => ({
-        credentials: { ...state.credentials, [user]: newPass }
+        credentials: { ...(state.credentials || DEFAULT_CREDENTIALS), [user]: newPass }
       })),
     }),
-    { name: "kharrazi-auth" } // Sauvegarde dans le LocalStorage
+    { 
+      name: "kharrazi-auth",
+      version: 2, // 🔴 C'EST LA MAGIE ICI : Ça va forcer tous les navigateurs à vider l'ancien cache cassé
+    }
   )
 );
