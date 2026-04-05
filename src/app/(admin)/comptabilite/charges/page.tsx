@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Save, X, Wrench, Shield, Droplets, Package, Search } from "lucide-react";
 import { useStore } from "@/store";
 import { cn } from "@/lib/utils";
@@ -14,36 +14,85 @@ const CAT: Record<string, { label: string; icon: React.ReactNode; color: string 
 };
 
 export default function ChargesPage() {
-  const { expenses, vehicles, addExpense, updateExpense, deleteExpense } = useStore();
+  // 1. Safe destructuring with fallback arrays to prevent .filter crashes
+  const { expenses = [], vehicles = [], addExpense, updateExpense, deleteExpense } = useStore();
+  
+  // 2. Hydration fix: prevent rendering dates on the server
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("ALL");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ category: "MAINTENANCE", description: "", amount: "", date: new Date().toISOString().slice(0, 10), vendor: "", vehicleId: "" });
+  
+  const [form, setForm] = useState({ 
+    category: "MAINTENANCE", 
+    description: "", 
+    amount: "", 
+    date: "", // Initialized empty, set on mount/open
+    vendor: "", 
+    vehicleId: "" 
+  });
 
   const filtered = expenses.filter((e) => {
     const str = `${e.description} ${e.vendor ?? ""}`.toLowerCase();
     return str.includes(search.toLowerCase()) && (filterCat === "ALL" || e.category === filterCat);
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const total = filtered.reduce((s, e) => s + e.amount, 0);
-  const totalAll = expenses.reduce((s, e) => s + e.amount, 0);
+  const total = filtered.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalAll = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
 
-  const resetForm = () => { setForm({ category: "MAINTENANCE", description: "", amount: "", date: new Date().toISOString().slice(0, 10), vendor: "", vehicleId: "" }); setEditingId(null); setShowForm(false); };
+  const resetForm = () => { 
+    setForm({ 
+      category: "MAINTENANCE", 
+      description: "", 
+      amount: "", 
+      date: new Date().toISOString().slice(0, 10), 
+      vendor: "", 
+      vehicleId: "" 
+    }); 
+    setEditingId(null); 
+    setShowForm(false); 
+  };
 
   const handleSubmit = () => {
     if (!form.description || !form.amount || !form.date) return;
-    const data = { category: form.category, description: form.description, amount: parseFloat(form.amount), date: form.date, vendor: form.vendor || null, vehicleId: form.vehicleId || null };
-    if (editingId) { updateExpense(editingId, data); }
-    else { addExpense(data); }
+    
+    const data = { 
+      category: form.category, 
+      description: form.description, 
+      amount: parseFloat(form.amount), 
+      date: form.date, 
+      vendor: form.vendor || null, 
+      vehicleId: form.vehicleId || null 
+    };
+    
+    if (editingId) { 
+      updateExpense(editingId, data); 
+    } else { 
+      addExpense(data); 
+    }
     resetForm();
   };
 
   const startEdit = (e: any) => {
-    setForm({ category: e.category, description: e.description, amount: e.amount.toString(), date: e.date, vendor: e.vendor ?? "", vehicleId: e.vehicleId ?? "" });
+    setForm({ 
+      category: e.category, 
+      description: e.description, 
+      amount: e.amount.toString(), 
+      date: e.date.slice(0, 10), // Ensure format is correct for input type="date"
+      vendor: e.vendor ?? "", 
+      vehicleId: e.vehicleId ?? "" 
+    });
     setEditingId(e.id);
     setShowForm(true);
   };
+
+  // Do not render anything until client has mounted to prevent Hydration errors
+  if (!mounted) return null;
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -61,11 +110,13 @@ export default function ChargesPage() {
       {/* Summary */}
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
         {Object.entries(CAT).map(([key, cfg]) => {
-          const catTotal = expenses.filter(e => e.category === key).reduce((s, e) => s + e.amount, 0);
+          const catTotal = expenses.filter(e => e.category === key).reduce((s, e) => s + Number(e.amount || 0), 0);
           return (
             <button key={key} onClick={() => setFilterCat(filterCat === key ? "ALL" : key)}
               className={cn("rounded-xl border bg-[#161b22] p-3 text-left transition-all", filterCat === key ? "border-brand-orange-500/40 bg-brand-orange-500/5" : "border-[#21262d] hover:border-[#30363d]")}>
-              <div className={cn("inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border mb-2", cfg.color)}>{cfg.icon}{cfg.label}</div>
+              <div className={cn("inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border mb-2", cfg.color)}>
+                {cfg.icon}{cfg.label}
+              </div>
               <p className="text-sm font-bold text-white">{catTotal.toLocaleString("fr-FR")} MAD</p>
             </button>
           );
@@ -75,7 +126,10 @@ export default function ChargesPage() {
       {/* Add/Edit form */}
       {showForm && (
         <div className="rounded-xl border border-brand-orange-500/25 bg-[#161b22] p-5 space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm font-bold text-slate-200">{editingId ? "Modifier la dépense" : "Nouvelle dépense"}</p><button onClick={resetForm} className="text-slate-500 hover:text-slate-300"><X size={14} /></button></div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-slate-200">{editingId ? "Modifier la dépense" : "Nouvelle dépense"}</p>
+            <button onClick={resetForm} className="text-slate-500 hover:text-slate-300"><X size={14} /></button>
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">Catégorie</label>
@@ -113,7 +167,7 @@ export default function ChargesPage() {
               </select>
             </div>
           </div>
-          <button onClick={handleSubmit} disabled={!form.description || !form.amount}
+          <button onClick={handleSubmit} disabled={!form.description || !form.amount || !form.date}
             className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-600 hover:bg-brand-orange-500 disabled:opacity-40 text-white font-semibold rounded-lg transition-colors text-sm">
             <Save size={14} /> {editingId ? "Mettre à jour" : "Enregistrer"}
           </button>
@@ -133,38 +187,41 @@ export default function ChargesPage() {
           <p className="text-xs text-slate-500">{filtered.length} entrée{filtered.length > 1 ? "s" : ""}</p>
           <p className="text-sm font-bold text-brand-orange-400">{total.toLocaleString("fr-FR")} MAD</p>
         </div>
+        
         {filtered.length === 0 ? (
           <div className="py-12 text-center text-slate-600"><p>Aucune dépense trouvée</p></div>
         ) : (
-          <table className="w-full">
-            <thead><tr className="border-b border-[#21262d]">
-              {["Catégorie", "Description", "Montant", "Date", "Véhicule", "Fournisseur", ""].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
-              ))}
-            </tr></thead>
-            <tbody>
-              {filtered.map((e) => {
-                const cfg = CAT[e.category];
-                const veh = vehicles.find((v) => v.id === e.vehicleId);
-                return (
-                  <tr key={e.id} className="border-b border-[#21262d] hover:bg-[#1c2130]/50 transition-colors">
-                    <td className="px-4 py-3"><span className={cn("inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>{cfg.icon}{cfg.label}</span></td>
-                    <td className="px-4 py-3 text-sm text-slate-300 max-w-xs truncate">{e.description}</td>
-                    <td className="px-4 py-3 text-sm font-bold text-brand-orange-400">− {e.amount.toLocaleString("fr-FR")} MAD</td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{new Date(e.date).toLocaleDateString("fr-FR")}</td>
-                    <td className="px-4 py-3"><span className="text-xs font-mono text-slate-500">{veh ? `${veh.plate}` : "—"}</span></td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{e.vendor ?? "—"}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => startEdit(e)} className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-brand-green-400 hover:bg-brand-green-500/10 transition-colors"><Edit2 size={12} /></button>
-                        <button onClick={() => deleteExpense(e.id)} className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 size={12} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead><tr className="border-b border-[#21262d]">
+                {["Catégorie", "Description", "Montant", "Date", "Véhicule", "Fournisseur", "Actions"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {filtered.map((e) => {
+                  const cfg = CAT[e.category] || CAT.OTHER;
+                  const veh = vehicles.find((v) => v.id === e.vehicleId);
+                  return (
+                    <tr key={e.id} className="border-b border-[#21262d] hover:bg-[#1c2130]/50 transition-colors">
+                      <td className="px-4 py-3"><span className={cn("inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>{cfg.icon}{cfg.label}</span></td>
+                      <td className="px-4 py-3 text-sm text-slate-300 max-w-xs truncate" title={e.description}>{e.description}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-brand-orange-400">− {Number(e.amount).toLocaleString("fr-FR")} MAD</td>
+                      <td className="px-4 py-3 text-xs text-slate-500">{new Date(e.date).toLocaleDateString("fr-FR")}</td>
+                      <td className="px-4 py-3"><span className="text-xs font-mono text-slate-500">{veh ? `${veh.plate}` : "—"}</span></td>
+                      <td className="px-4 py-3 text-xs text-slate-500">{e.vendor ?? "—"}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => startEdit(e)} className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-brand-green-400 hover:bg-brand-green-500/10 transition-colors"><Edit2 size={12} /></button>
+                          <button onClick={() => deleteExpense(e.id)} className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 size={12} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
